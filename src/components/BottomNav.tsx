@@ -1,13 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { ScanFace, History, User } from "lucide-react";
-
-const items = [
-  { to: "/today", label: "Today", icon: ScanFace },
-  { to: "/history", label: "History", icon: History },
-  { to: "/profile", label: "Profile", icon: User },
-] as const;
+import { ScanFace, History, User, Users } from "lucide-react";
+import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export function BottomNav() {
+  const { data: isTeacher } = useIsTeacher();
+  const items = [
+    { to: "/today", label: "Today", icon: ScanFace },
+    { to: "/history", label: "History", icon: History },
+    ...(isTeacher ? [{ to: "/students", label: "Students", icon: Users }] : []),
+    { to: "/profile", label: "Profile", icon: User },
+  ] as const;
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-md border-t border-border bg-card/95 px-3 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <ul className="flex items-stretch justify-around py-2">
