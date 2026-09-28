@@ -13,9 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 type Role = "teacher" | "student";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): { mode?: "signin" | "signup"; role?: Role } => ({
-    mode: s.mode === "signup" ? "signup" : s.mode === "signin" ? "signin" : undefined,
-    role: s.role === "teacher" ? "teacher" : s.role === "student" ? "student" : undefined,
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { mode?: "signin" | "signup" | undefined; role?: Role | undefined } => ({
+    mode: s["mode"] === "signup" ? "signup" : s["mode"] === "signin" ? "signin" : undefined,
+    role: s["role"] === "teacher" ? "teacher" : s["role"] === "student" ? "student" : undefined,
   }),
   head: () => ({
     meta: [
@@ -58,7 +60,10 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     void navigate({ to: "/today", replace: true });
   }
 
@@ -74,7 +79,10 @@ function AuthPage() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (!data.session) {
       toast.success("Check your email to confirm your account, then sign in.");
       return;
@@ -86,7 +94,10 @@ function AuthPage() {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (result.error) return toast.error("Google sign-in failed. Try again.");
+    if (result.error) {
+      toast.error("Google sign-in failed. Try again.");
+      return;
+    }
     if (result.redirected) return;
     void navigate({ to: "/today", replace: true });
   }
