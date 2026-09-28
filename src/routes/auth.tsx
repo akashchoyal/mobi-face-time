@@ -10,7 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+type Role = "teacher" | "student";
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>): { mode?: "signin" | "signup"; role?: Role } => ({
+    mode: s.mode === "signup" ? "signup" : s.mode === "signin" ? "signin" : undefined,
+    role: s.role === "teacher" ? "teacher" : s.role === "student" ? "student" : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — FaceMark Attendance" },
@@ -22,7 +28,7 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: "Sign in — FaceMark Attendance" },
       {
         property: "og:description",
-        content: "Face-verified check in and check out for your team.",
+        content: "Face-verified check in and check out for teachers and students.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,10 +39,13 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<Role>(search.role ?? "student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const roleLabel = role === "teacher" ? "Teacher" : "Student";
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -61,7 +70,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name },
+        data: { full_name: name, role },
       },
     });
     setLoading(false);
@@ -90,13 +99,28 @@ function AuthPage() {
       </Link>
 
       <div className="rounded-3xl border border-border p-6 surface-scan">
-        <Tabs defaultValue="signin">
+        <div className="mb-5 grid grid-cols-2 gap-2 rounded-full bg-secondary p-1">
+          {(["student", "teacher"] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRole(r)}
+              className={`rounded-full py-2 text-sm font-medium transition-colors ${
+                role === r ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {r === "teacher" ? "Teacher" : "Student"}
+            </button>
+          ))}
+        </div>
+        <p className="mb-4 text-center text-sm text-muted-foreground">{roleLabel} account</p>
+        <Tabs defaultValue={search.mode ?? "signin"}>
           <TabsList className="grid w-full grid-cols-2 rounded-full bg-secondary">
             <TabsTrigger value="signin" className="rounded-full">
-              Sign in
+              {roleLabel} login
             </TabsTrigger>
             <TabsTrigger value="signup" className="rounded-full">
-              Sign up
+              New registration
             </TabsTrigger>
           </TabsList>
 
