@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { LogIn, LogOut, ShieldCheck, ShieldAlert } from "lucide-react";
 import { getDashboard, markAttendance } from "@/lib/attendance.functions";
 import { FaceCamera } from "@/components/FaceCamera";
 import { Button } from "@/components/ui/button";
+import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
