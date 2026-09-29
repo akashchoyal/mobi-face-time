@@ -24,11 +24,14 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 function HistoryPage() {
+  const { data: isTeacher } = useIsTeacher();
   const fetchDashboard = useServerFn(getDashboard);
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => fetchDashboard(),
   });
+
+  if (isTeacher) return <Navigate to="/students" replace />;
 
   const groups = new Map<string, typeof records>();
   const records = data?.records ?? [];
