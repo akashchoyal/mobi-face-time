@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LogIn, LogOut } from "lucide-react";
 
 import { getDashboard } from "@/lib/attendance.functions";
+import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({

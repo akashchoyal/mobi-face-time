@@ -32,11 +32,14 @@ function timeOf(iso: string) {
 }
 
 function TodayPage() {
+  const { data: isTeacher } = useIsTeacher();
   const fetchDashboard = useServerFn(getDashboard);
   const mark = useServerFn(markAttendance);
   const queryClient = useQueryClient();
   const [kind, setKind] = useState<"in" | "out">("in");
   const [busy, setBusy] = useState(false);
+
+  if (isTeacher) return <Navigate to="/students" replace />;
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
