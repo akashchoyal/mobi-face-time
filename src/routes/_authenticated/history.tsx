@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LogIn, LogOut } from "lucide-react";
 
 import { getDashboard } from "@/lib/attendance.functions";
+import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
@@ -23,11 +24,14 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 function HistoryPage() {
+  const { data: isTeacher } = useIsTeacher();
   const fetchDashboard = useServerFn(getDashboard);
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => fetchDashboard(),
   });
+
+  if (isTeacher) return <Navigate to="/students" replace />;
 
   const groups = new Map<string, typeof records>();
   const records = data?.records ?? [];
