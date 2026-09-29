@@ -60,17 +60,17 @@ function Landing() {
 
         <div className="mt-7 flex flex-col gap-3">
           <Button asChild size="lg" className="rounded-full glow-ring">
-            <Link to="/auth" search={{ mode: "signup", role: "student" }}>
+            <Link to="/auth/student" search={{ mode: "signup" }}>
               New registration
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="rounded-full">
-            <Link to="/auth" search={{ mode: "signin", role: "teacher" }}>
+            <Link to="/auth/teacher" search={{ mode: "signin" }}>
               Teacher login
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="rounded-full">
-            <Link to="/auth" search={{ mode: "signin", role: "student" }}>
+            <Link to="/auth/student" search={{ mode: "signin" }}>
               Student login
             </Link>
           </Button>

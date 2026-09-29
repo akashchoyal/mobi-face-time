@@ -11,11 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStudentsRouteImport } from './routes/_authenticated/students'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
+import { Route as AuthStudentRouteImport } from './routes/auth.student'
+import { Route as AuthTeacherRouteImport } from './routes/auth.teacher'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,11 +25,6 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
@@ -51,53 +47,82 @@ const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   path: '/today',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthStudentRoute = AuthStudentRouteImport.update({
+  id: '/auth/student',
+  path: '/auth/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthTeacherRoute = AuthTeacherRouteImport.update({
+  id: '/auth/teacher',
+  path: '/auth/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/auth/student': typeof AuthStudentRoute
+  '/auth/teacher': typeof AuthTeacherRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/students': typeof AuthenticatedStudentsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/auth/student': typeof AuthStudentRoute
+  '/auth/teacher': typeof AuthTeacherRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/students': typeof AuthenticatedStudentsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
+  '/auth/student': typeof AuthStudentRoute
+  '/auth/teacher': typeof AuthTeacherRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/history' | '/profile' | '/students' | '/today'
+  fullPaths:
+    | '/'
+    | '/history'
+    | '/profile'
+    | '/students'
+    | '/today'
+    | '/auth/student'
+    | '/auth/teacher'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/history' | '/profile' | '/students' | '/today'
+  to:
+    | '/'
+    | '/history'
+    | '/profile'
+    | '/students'
+    | '/today'
+    | '/auth/student'
+    | '/auth/teacher'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/auth'
     | '/_authenticated/history'
     | '/_authenticated/profile'
     | '/_authenticated/students'
     | '/_authenticated/today'
+    | '/auth/student'
+    | '/auth/teacher'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthStudentRoute: typeof AuthStudentRoute
+  AuthTeacherRoute: typeof AuthTeacherRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -114,13 +139,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/history': {
@@ -151,6 +169,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTodayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/auth/student': {
+      id: '/auth/student'
+      path: '/auth/student'
+      fullPath: '/auth/student'
+      preLoaderRoute: typeof AuthStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/teacher': {
+      id: '/auth/teacher'
+      path: '/auth/teacher'
+      fullPath: '/auth/teacher'
+      preLoaderRoute: typeof AuthTeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -174,7 +206,8 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthStudentRoute: AuthStudentRoute,
+  AuthTeacherRoute: AuthTeacherRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

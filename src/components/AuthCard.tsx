@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ScanFace, Loader2 } from "lucide-react";
+import { useNavigate, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { ScanFace, Loader2, GraduationCap, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -12,48 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Role = "teacher" | "student";
 
-export const Route = createFileRoute("/auth")({
-  validateSearch: (
-    s: Record<string, unknown>,
-  ): { mode?: "signin" | "signup" | undefined; role?: Role | undefined } => ({
-    mode: s["mode"] === "signup" ? "signup" : s["mode"] === "signin" ? "signin" : undefined,
-    role: s["role"] === "teacher" ? "teacher" : s["role"] === "student" ? "student" : undefined,
-  }),
-  head: () => ({
-    meta: [
-      { title: "Sign in — FaceMark Attendance" },
-      {
-        name: "description",
-        content:
-          "Sign in or create your FaceMark account to mark attendance with a quick face scan.",
-      },
-      { property: "og:title", content: "Sign in — FaceMark Attendance" },
-      {
-        property: "og:description",
-        content: "Face-verified check in and check out for teachers and students.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: AuthPage,
-});
-
-function AuthPage() {
+export function AuthCard({ role, mode }: { role: Role; mode: "signin" | "signup" }) {
   const navigate = useNavigate();
-  const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<Role>(search.role ?? "student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const roleLabel = role === "teacher" ? "Teacher" : "Student";
-
-  useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) void navigate({ to: "/today", replace: true });
-    });
-  }, [navigate]);
+  const RoleIcon = role === "teacher" ? BookOpen : GraduationCap;
+  const home = role === "teacher" ? "/students" : "/today";
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -64,7 +31,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    void navigate({ to: "/today", replace: true });
+    void navigate({ to: home, replace: true });
   }
 
   async function signUp(e: React.FormEvent) {
@@ -87,7 +54,7 @@ function AuthPage() {
       toast.success("Check your email to confirm your account, then sign in.");
       return;
     }
-    void navigate({ to: "/today", replace: true });
+    void navigate({ to: home, replace: true });
   }
 
   async function google() {
@@ -99,7 +66,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    void navigate({ to: "/today", replace: true });
+    void navigate({ to: home, replace: true });
   }
 
   return (
@@ -110,22 +77,12 @@ function AuthPage() {
       </Link>
 
       <div className="rounded-3xl border border-border p-6 surface-scan">
-        <div className="mb-5 grid grid-cols-2 gap-2 rounded-full bg-secondary p-1">
-          {(["student", "teacher"] as const).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRole(r)}
-              className={`rounded-full py-2 text-sm font-medium transition-colors ${
-                role === r ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              }`}
-            >
-              {r === "teacher" ? "Teacher" : "Student"}
-            </button>
-          ))}
+        <div className="mb-5 flex items-center justify-center gap-2 rounded-full bg-secondary py-2.5">
+          <RoleIcon className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{roleLabel} account</span>
         </div>
-        <p className="mb-4 text-center text-sm text-muted-foreground">{roleLabel} account</p>
-        <Tabs defaultValue={search.mode ?? "signin"}>
+
+        <Tabs defaultValue={mode}>
           <TabsList className="grid w-full grid-cols-2 rounded-full bg-secondary">
             <TabsTrigger value="signin" className="rounded-full">
               {roleLabel} login
@@ -160,7 +117,7 @@ function AuthPage() {
               </div>
               <Button type="submit" className="w-full rounded-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign in
+                Sign in as {roleLabel}
               </Button>
             </form>
           </TabsContent>
@@ -201,7 +158,7 @@ function AuthPage() {
               </div>
               <Button type="submit" className="w-full rounded-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create account
+                Create {roleLabel} account
               </Button>
             </form>
           </TabsContent>
@@ -220,6 +177,24 @@ function AuthPage() {
         >
           Continue with Google
         </Button>
+
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          {role === "teacher" ? (
+            <>
+              Student ho?{" "}
+              <Link to="/auth/student" search={{ mode }} className="text-primary underline">
+                Student login
+              </Link>
+            </>
+          ) : (
+            <>
+              Teacher ho?{" "}
+              <Link to="/auth/teacher" search={{ mode }} className="text-primary underline">
+                Teacher login
+              </Link>
+            </>
+          )}
+        </p>
       </div>
     </main>
   );
