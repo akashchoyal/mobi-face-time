@@ -40,7 +40,7 @@ export const getDashboard = createServerFn({ method: "GET" })
         .select("id, kind, confidence, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(50),
+        .limit(200),
     ]);
 
     let facePreview: string | null = null;
