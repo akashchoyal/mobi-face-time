@@ -47,10 +47,6 @@ function Landing() {
         <h1 className="text-4xl font-semibold leading-tight tracking-tight">
           Attendance with a <span className="text-gradient-accent">face scan</span>.
         </h1>
-        <p className="mt-4 text-base text-muted-foreground">
-          Save your face once, then check in and out from your phone. No cards, no sheets, no
-          arguments about who was here.
-        </p>
 
         <div className="mt-7 flex flex-col gap-3">
           <Button asChild size="lg" className="rounded-full glow-ring">
