@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { ScanFace, Clock, ShieldCheck, Smartphone } from "lucide-react";
+import { ScanFace } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,6 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const features = [
-  { icon: ScanFace, title: "Face verified", text: "Every entry is matched to your saved photo." },
-  { icon: Clock, title: "Two taps", text: "Check in or out in under five seconds." },
-  { icon: ShieldCheck, title: "Private", text: "Only you can see your photos and records." },
-  { icon: Smartphone, title: "Made for phones", text: "Works right in your mobile browser." },
-];
 
 function Landing() {
   const navigate = useNavigate();
@@ -77,15 +71,6 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mt-12 grid grid-cols-2 gap-3">
-        {features.map(({ icon: Icon, title, text }) => (
-          <div key={title} className="rounded-3xl border border-border p-4 surface-scan">
-            <Icon className="h-5 w-5 text-primary" />
-            <h2 className="mt-3 text-sm font-semibold">{title}</h2>
-            <p className="mt-1 text-xs text-muted-foreground">{text}</p>
-          </div>
-        ))}
-      </section>
     </main>
   );
 }
