@@ -37,7 +37,7 @@ function StudentsPage() {
       const start = new Date(`${day}T00:00:00`);
       const end = new Date(start.getTime() + 86400000);
       const [{ data: profiles }, { data: records }, { data: teachers }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, email").order("full_name"),
+        supabase.from("profiles").select("id, full_name, email, school_name, class_name, section").order("full_name"),
         supabase
           .from("attendance")
           .select("id, user_id, kind, confidence, created_at")
@@ -85,7 +85,7 @@ function StudentsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-medium">{s.full_name || "Unnamed"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{s.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">{s.class_name ? `${s.class_name} – ${s.section} · ` : ""}{s.school_name || s.email}</p>
                   </div>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${

@@ -43,25 +43,34 @@ export type Database = {
       }
       profiles: {
         Row: {
+          class_name: string
           created_at: string
           email: string
           face_path: string | null
           full_name: string
           id: string
+          school_name: string
+          section: string
         }
         Insert: {
+          class_name?: string
           created_at?: string
           email?: string
           face_path?: string | null
           full_name?: string
           id: string
+          school_name?: string
+          section?: string
         }
         Update: {
+          class_name?: string
           created_at?: string
           email?: string
           face_path?: string | null
           full_name?: string
           id?: string
+          school_name?: string
+          section?: string
         }
         Relationships: []
       }
@@ -88,6 +97,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      class_seat_count: {
+        Args: { _class: string; _section: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
