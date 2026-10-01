@@ -26,9 +26,20 @@ function toDateInput(d: Date) {
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
 }
 
+const CLASS_OPTIONS: { label: string; className: string; section: string }[] = [
+  { label: "All", className: "", section: "" },
+  { label: "10th – A", className: "10th", section: "A" },
+  { label: "10th – B", className: "10th", section: "B" },
+  { label: "11th – Maths", className: "11th", section: "Maths" },
+  { label: "11th – Bio", className: "11th", section: "Bio" },
+  { label: "11th – Arts", className: "11th", section: "Arts" },
+  { label: "11th – Agri", className: "11th", section: "Agriculture" },
+];
+
 function StudentsPage() {
   const { data: isTeacher, isLoading: roleLoading } = useIsTeacher();
   const [day, setDay] = useState(toDateInput(new Date()));
+  const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>(CLASS_OPTIONS[0]!);
 
   const { data, isLoading } = useQuery({
     queryKey: ["teacher-attendance", day],
@@ -57,27 +68,48 @@ function StudentsPage() {
   if (!isTeacher)
     return <p className="p-6 text-center text-muted-foreground">Only teachers can see this page.</p>;
 
-  const present = data?.filter((s) => s.records.some((r) => r.kind === "in")).length ?? 0;
+  const filtered = data?.filter(
+    (s) =>
+      !classFilter.className ||
+      (s.class_name === classFilter.className && s.section === classFilter.section),
+  );
+  const present = filtered?.filter((s) => s.records.some((r) => r.kind === "in")).length ?? 0;
 
   return (
     <main className="px-5 pt-8">
       <h1 className="text-2xl font-semibold tracking-tight">Student attendance</h1>
       <div className="mt-4 flex items-center gap-3">
         <Input type="date" value={day} onChange={(e) => setDay(e.target.value)} className="w-auto" />
-        {data && (
+        {filtered && (
           <span className="text-sm text-muted-foreground">
-            {present} / {data.length} present
+            {present} / {filtered.length} present
           </span>
         )}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        {CLASS_OPTIONS.map((opt) => (
+          <button
+            key={opt.label}
+            onClick={() => setClassFilter(opt)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+              classFilter.label === opt.label
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <Spinner />
-      ) : !data?.length ? (
-        <p className="mt-8 text-center text-muted-foreground">No students registered yet.</p>
+      ) : !filtered?.length ? (
+        <p className="mt-8 text-center text-muted-foreground">No students in this class yet.</p>
       ) : (
         <ul className="mt-5 space-y-3">
-          {data.map((s) => {
+          {filtered.map((s) => {
             const firstIn = s.records.find((r) => r.kind === "in");
             const lastOut = [...s.records].reverse().find((r) => r.kind === "out");
             return (
