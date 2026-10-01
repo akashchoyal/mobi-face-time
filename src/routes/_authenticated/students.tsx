@@ -39,7 +39,7 @@ const CLASS_OPTIONS: { label: string; className: string; section: string }[] = [
 function StudentsPage() {
   const { data: isTeacher, isLoading: roleLoading } = useIsTeacher();
   const [day, setDay] = useState(toDateInput(new Date()));
-  const [classFilter, setClassFilter] = useState(CLASS_OPTIONS[0]);
+  const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>(CLASS_OPTIONS[0]!);
 
   const { data, isLoading } = useQuery({
     queryKey: ["teacher-attendance", day],
