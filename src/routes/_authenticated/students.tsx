@@ -26,9 +26,20 @@ function toDateInput(d: Date) {
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
 }
 
+const CLASS_OPTIONS: { label: string; className: string; section: string }[] = [
+  { label: "All", className: "", section: "" },
+  { label: "10th – A", className: "10th", section: "A" },
+  { label: "10th – B", className: "10th", section: "B" },
+  { label: "11th – Maths", className: "11th", section: "Maths" },
+  { label: "11th – Bio", className: "11th", section: "Bio" },
+  { label: "11th – Arts", className: "11th", section: "Arts" },
+  { label: "11th – Agri", className: "11th", section: "Agriculture" },
+];
+
 function StudentsPage() {
   const { data: isTeacher, isLoading: roleLoading } = useIsTeacher();
   const [day, setDay] = useState(toDateInput(new Date()));
+  const [classFilter, setClassFilter] = useState(CLASS_OPTIONS[0]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["teacher-attendance", day],
