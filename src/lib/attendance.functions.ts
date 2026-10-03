@@ -37,7 +37,7 @@ export const getDashboard = createServerFn({ method: "GET" })
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase
         .from("attendance")
-        .select("id, kind, confidence, created_at")
+        .select("id, kind, confidence, created_at, subject")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(200),
@@ -56,6 +56,7 @@ export const getDashboard = createServerFn({ method: "GET" })
         ? {
             fullName: profile.full_name,
             email: profile.email,
+            className: profile.class_name,
             enrolled: Boolean(profile.face_path),
           }
         : null,
@@ -146,7 +147,13 @@ async function compareFaces(reference: string, selfie: string): Promise<MatchRes
 export const markAttendance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ image: DataUrl, kind: z.enum(["in", "out"]) }).parse(input),
+    z
+      .object({
+        image: DataUrl,
+        kind: z.enum(["in", "out"]),
+        subject: z.string().max(40).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -186,6 +193,7 @@ export const markAttendance = createServerFn({ method: "POST" })
     const { error } = await supabase.from("attendance").insert({
       user_id: userId,
       kind: data.kind,
+      subject: data.subject ?? "",
       confidence: match.confidence,
       photo_path: photoPath,
     });

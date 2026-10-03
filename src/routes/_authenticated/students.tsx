@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SUBJECTS_10TH } from "@/lib/subjects";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
 import { Input } from "@/components/ui/input";
 
@@ -39,6 +40,7 @@ const CLASS_OPTIONS: { label: string; className: string; section: string }[] = [
 function StudentsPage() {
   const { data: isTeacher, isLoading: roleLoading } = useIsTeacher();
   const [day, setDay] = useState(toDateInput(new Date()));
+  const [subjectFilter, setSubjectFilter] = useState("");
   const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>(CLASS_OPTIONS[0]!);
 
   const { data, isLoading } = useQuery({
@@ -51,7 +53,7 @@ function StudentsPage() {
         supabase.from("profiles").select("id, full_name, email, school_name, class_name, section").order("full_name"),
         supabase
           .from("attendance")
-          .select("id, user_id, kind, confidence, created_at")
+          .select("id, user_id, kind, confidence, created_at, subject")
           .gte("created_at", start.toISOString())
           .lt("created_at", end.toISOString())
           .order("created_at"),
@@ -68,11 +70,18 @@ function StudentsPage() {
   if (!isTeacher)
     return <p className="p-6 text-center text-muted-foreground">Only teachers can see this page.</p>;
 
-  const filtered = data?.filter(
-    (s) =>
-      !classFilter.className ||
-      (s.class_name === classFilter.className && s.section === classFilter.section),
-  );
+  const showSubjects = classFilter.className === "10th";
+  const filtered = data
+    ?.filter(
+      (s) =>
+        !classFilter.className ||
+        (s.class_name === classFilter.className && s.section === classFilter.section),
+    )
+    .map((s) =>
+      showSubjects && subjectFilter
+        ? { ...s, records: s.records.filter((r) => r.subject === subjectFilter) }
+        : s,
+    );
   const present = filtered?.filter((s) => s.records.some((r) => r.kind === "in")).length ?? 0;
 
   return (
@@ -102,6 +111,24 @@ function StudentsPage() {
           </button>
         ))}
       </div>
+
+      {showSubjects && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {["", ...SUBJECTS_10TH].map((sub) => (
+            <button
+              key={sub || "all"}
+              onClick={() => setSubjectFilter(sub)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                subjectFilter === sub
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground"
+              }`}
+            >
+              {sub || "All subjects"}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isLoading ? (
         <Spinner />
