@@ -69,7 +69,14 @@ export function AuthCard({ role, mode }: { role: Role; mode: "signin" | "signup"
     });
     if (error) {
       setLoading(false);
-      toast.error(error.message.includes("Database") ? "Class full ho sakti hai. Dusra section try karein." : error.message);
+      const msg = error.message.toLowerCase();
+      toast.error(
+        msg.includes("already registered") || msg.includes("already exists")
+          ? "Is email se account pehle se bana hua hai. Student login se sign in karein, ya dusra email use karein."
+          : msg.includes("database")
+            ? "Class full ho sakti hai. Dusra section try karein."
+            : error.message,
+      );
       return;
     }
     if (!data.session) {
