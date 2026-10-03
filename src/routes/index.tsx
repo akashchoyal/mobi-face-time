@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { ScanFace } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,36 +38,41 @@ function Landing() {
   }, [navigate]);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10">
-      <div className="flex items-center gap-2">
-        <ScanFace className="h-7 w-7 text-primary" />
-        <span className="text-xl font-semibold tracking-tight">FaceMark</span>
-      </div>
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center px-5 py-12">
+      <img
+        src={logo}
+        alt="FaceMark logo"
+        width={1024}
+        height={1024}
+        className="glow-ring h-28 w-28 rounded-3xl bg-card object-cover p-2"
+      />
 
-      <section className="mt-10">
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight">
-          Attendance with a <span className="text-gradient-accent">face scan</span>.
-        </h1>
+      <h1 className="mt-6 text-4xl font-semibold tracking-tight">
+        Face<span className="text-gradient-accent">Mark</span>
+      </h1>
 
-        <div className="mt-7 flex flex-col gap-3">
-          <Button asChild size="lg" className="rounded-full glow-ring">
-            <Link to="/auth/student" search={{ mode: "signup" }}>
-              New registration
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="secondary" className="rounded-full">
-            <Link to="/auth/teacher" search={{ mode: "signin" }}>
-              Teacher login
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="secondary" className="rounded-full">
-            <Link to="/auth/student" search={{ mode: "signin" }}>
-              Student login
-            </Link>
-          </Button>
+      <div className="mt-auto w-full flex-col gap-3 pb-4">
+        <Button
+          size="lg"
+          className="glow-ring w-full rounded-full text-base"
+          onClick={() => navigate({ to: "/auth/student", search: { mode: "signup" } })}
+        >
+          Start
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+
+        <div className="mt-5 flex items-center justify-center gap-5 text-sm text-muted-foreground">
+          <Link to="/auth/student" search={{ mode: "signup" }} className="transition-colors hover:text-foreground">
+            New registration
+          </Link>
+          <Link to="/auth/teacher" search={{ mode: "signin" }} className="transition-colors hover:text-foreground">
+            Teacher login
+          </Link>
+          <Link to="/auth/student" search={{ mode: "signin" }} className="transition-colors hover:text-foreground">
+            Student login
+          </Link>
         </div>
-      </section>
-
+      </div>
     </main>
   );
 }
