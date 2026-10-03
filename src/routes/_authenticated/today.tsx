@@ -9,6 +9,7 @@ import { getDashboard, markAttendance } from "@/lib/attendance.functions";
 import { FaceCamera } from "@/components/FaceCamera";
 import { Button } from "@/components/ui/button";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
+import { SUBJECTS_10TH } from "@/lib/subjects";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -38,6 +39,7 @@ function TodayPage() {
   const queryClient = useQueryClient();
   const [kind, setKind] = useState<"in" | "out">("in");
   const [busy, setBusy] = useState(false);
+  const [subject, setSubject] = useState("");
 
   if (isTeacher) return <Navigate to="/students" replace />;
 
@@ -46,15 +48,21 @@ function TodayPage() {
     queryFn: () => fetchDashboard(),
   });
 
+  const is10th = data?.profile?.className === "10th";
+
   const today = new Date().toDateString();
   const todays = (data?.records ?? []).filter(
     (r) => new Date(r.created_at).toDateString() === today,
   );
 
   async function handleCapture(image: string) {
+    if (is10th && !subject) {
+      toast.error("Pehle subject choose karein");
+      return;
+    }
     setBusy(true);
     try {
-      const result = await mark({ data: { image, kind } });
+      const result = await mark({ data: { image, kind, subject: is10th ? subject : undefined } });
       if (!result.ok) {
         toast.error(result.reason);
         return;
@@ -119,6 +127,29 @@ function TodayPage() {
             </button>
           </div>
 
+          {is10th && (
+            <div className="mb-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Subject
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {SUBJECTS_10TH.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSubject(s)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                      subject === s
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <FaceCamera
             busy={busy}
             onCapture={(img) => void handleCapture(img)}
@@ -145,6 +176,7 @@ function TodayPage() {
                 <span className="flex items-center gap-2 text-sm font-medium">
                   <ShieldCheck className="h-4 w-4 text-success" />
                   {r.kind === "in" ? "Checked in" : "Checked out"}
+                  {r.subject ? ` · ${r.subject}` : ""}
                 </span>
                 <span className="text-sm text-muted-foreground">{timeOf(r.created_at)}</span>
               </li>
