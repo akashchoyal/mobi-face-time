@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance ADD COLUMN subject text NOT NULL DEFAULT '';
