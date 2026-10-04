@@ -9,7 +9,7 @@ import { getDashboard, markAttendance } from "@/lib/attendance.functions";
 import { FaceCamera } from "@/components/FaceCamera";
 import { Button } from "@/components/ui/button";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
-import { SUBJECTS_10TH } from "@/lib/subjects";
+import { SUBJECTS_10TH, PERIODS } from "@/lib/subjects";
 
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => ({
@@ -40,6 +40,7 @@ function TodayPage() {
   const [kind, setKind] = useState<"in" | "out">("in");
   const [busy, setBusy] = useState(false);
   const [subject, setSubject] = useState("");
+  const [period, setPeriod] = useState("");
 
   if (isTeacher) return <Navigate to="/students" replace />;
 
@@ -60,9 +61,15 @@ function TodayPage() {
       toast.error("Pehle subject choose karein");
       return;
     }
+    if (!period) {
+      toast.error("Pehle period (time) choose karein");
+      return;
+    }
     setBusy(true);
     try {
-      const result = await mark({ data: { image, kind, subject: is10th ? subject : undefined } });
+      const result = await mark({
+        data: { image, kind, subject: is10th ? subject : undefined, period },
+      });
       if (!result.ok) {
         toast.error(result.reason);
         return;
@@ -150,6 +157,27 @@ function TodayPage() {
             </div>
           )}
 
+          <div className="mb-5">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Period (time)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PERIODS.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setPeriod(p.label)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                    period === p.label
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {p.label} · {p.time}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <FaceCamera
             busy={busy}
             onCapture={(img) => void handleCapture(img)}
@@ -177,6 +205,7 @@ function TodayPage() {
                   <ShieldCheck className="h-4 w-4 text-success" />
                   {r.kind === "in" ? "Checked in" : "Checked out"}
                   {r.subject ? ` · ${r.subject}` : ""}
+                  {r.period ? ` · ${r.period}` : ""}
                 </span>
                 <span className="text-sm text-muted-foreground">{timeOf(r.created_at)}</span>
               </li>
