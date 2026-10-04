@@ -22,7 +22,14 @@ export const Route = createFileRoute("/_authenticated/history")({
   component: HistoryPage,
 });
 
-type Record = { id: string; kind: string; confidence: number; created_at: string; subject?: string };
+type Record = {
+  id: string;
+  kind: string;
+  confidence: number;
+  created_at: string;
+  subject?: string;
+  period?: string;
+};
 
 function dayKey(date: Date): string {
   const y = date.getFullYear();
@@ -82,6 +89,7 @@ function HistoryPage() {
               <th className="px-4 py-3 font-medium">In</th>
               <th className="px-4 py-3 font-medium">Out</th>
               <th className="px-4 py-3 font-medium">Subject</th>
+              <th className="px-4 py-3 font-medium">Period</th>
               <th className="px-4 py-3 text-right font-medium">Status</th>
             </tr>
           </thead>
@@ -127,6 +135,9 @@ function HistoryPage() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {[...new Set(items.map((r) => r.subject).filter(Boolean))].join(", ") || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {[...new Set(items.map((r) => r.period).filter(Boolean))].join(", ") || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">{status}</td>
                 </tr>

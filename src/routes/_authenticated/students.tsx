@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { SUBJECTS_10TH } from "@/lib/subjects";
+import { SUBJECTS_10TH, PERIODS } from "@/lib/subjects";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
 import { Input } from "@/components/ui/input";
 
@@ -41,6 +41,7 @@ function StudentsPage() {
   const { data: isTeacher, isLoading: roleLoading } = useIsTeacher();
   const [day, setDay] = useState(toDateInput(new Date()));
   const [subjectFilter, setSubjectFilter] = useState("");
+  const [periodFilter, setPeriodFilter] = useState("");
   const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>(CLASS_OPTIONS[0]!);
 
   const { data, isLoading } = useQuery({
@@ -53,7 +54,7 @@ function StudentsPage() {
         supabase.from("profiles").select("id, full_name, email, school_name, class_name, section").order("full_name"),
         supabase
           .from("attendance")
-          .select("id, user_id, kind, confidence, created_at, subject")
+          .select("id, user_id, kind, confidence, created_at, subject, period")
           .gte("created_at", start.toISOString())
           .lt("created_at", end.toISOString())
           .order("created_at"),
@@ -77,11 +78,14 @@ function StudentsPage() {
         !classFilter.className ||
         (s.class_name === classFilter.className && s.section === classFilter.section),
     )
-    .map((s) =>
-      showSubjects && subjectFilter
-        ? { ...s, records: s.records.filter((r) => r.subject === subjectFilter) }
-        : s,
-    );
+    .map((s) => ({
+      ...s,
+      records: s.records.filter(
+        (r) =>
+          (!showSubjects || !subjectFilter || r.subject === subjectFilter) &&
+          (!periodFilter || r.period === periodFilter),
+      ),
+    }));
   const present = filtered?.filter((s) => s.records.some((r) => r.kind === "in")).length ?? 0;
 
   return (
@@ -130,6 +134,22 @@ function StudentsPage() {
         </div>
       )}
 
+      <div className="mt-3 flex flex-wrap gap-2">
+        {["", ...PERIODS.map((p) => p.label)].map((per) => (
+          <button
+            key={per || "all"}
+            onClick={() => setPeriodFilter(per)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+              periodFilter === per
+                ? "border-primary bg-primary/15 text-primary"
+                : "border-border text-muted-foreground"
+            }`}
+          >
+            {per || "All periods"}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <Spinner />
       ) : !filtered?.length ? (
@@ -155,10 +175,20 @@ function StudentsPage() {
                   </span>
                 </div>
                 {s.records.length > 0 && (
-                  <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-                    <span>In: {firstIn ? time(firstIn.created_at) : "—"}</span>
-                    <span>Out: {lastOut ? time(lastOut.created_at) : "—"}</span>
-                    <span>{s.records.length} scans</span>
+                  <div className="mt-3 space-y-1.5">
+                    {s.records.map((r) => (
+                      <div
+                        key={r.id}
+                        className="flex items-center justify-between text-xs text-muted-foreground"
+                      >
+                        <span>
+                          {r.kind === "in" ? "In" : "Out"}
+                          {r.subject ? ` · ${r.subject}` : ""}
+                          {r.period ? ` · ${r.period}` : ""}
+                        </span>
+                        <span>{time(r.created_at)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </li>

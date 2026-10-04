@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           id: string
           kind: string
+          period: string
           photo_path: string | null
           subject: string
           user_id: string
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind: string
+          period?: string
           photo_path?: string | null
           subject?: string
           user_id: string
@@ -38,6 +40,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          period?: string
           photo_path?: string | null
           subject?: string
           user_id?: string
