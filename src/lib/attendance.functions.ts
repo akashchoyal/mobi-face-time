@@ -37,7 +37,7 @@ export const getDashboard = createServerFn({ method: "GET" })
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase
         .from("attendance")
-        .select("id, kind, confidence, created_at, subject")
+        .select("id, kind, confidence, created_at, subject, period")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(200),
@@ -152,6 +152,7 @@ export const markAttendance = createServerFn({ method: "POST" })
         image: DataUrl,
         kind: z.enum(["in", "out"]),
         subject: z.string().max(40).optional(),
+        period: z.string().max(40).optional(),
       })
       .parse(input),
   )
@@ -194,6 +195,7 @@ export const markAttendance = createServerFn({ method: "POST" })
       user_id: userId,
       kind: data.kind,
       subject: data.subject ?? "",
+      period: data.period ?? "",
       confidence: match.confidence,
       photo_path: photoPath,
     });
