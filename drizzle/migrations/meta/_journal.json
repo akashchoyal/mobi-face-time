@@ -36,6 +36,13 @@
       "when": 1791034570861,
       "tag": "0004_attendance_subject",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791092976540,
+      "tag": "0005_attendance_period",
+      "breakpoints": true
     }
   ]
 }
