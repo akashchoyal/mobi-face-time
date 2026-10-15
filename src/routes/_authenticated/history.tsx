@@ -64,12 +64,24 @@ function HistoryPage() {
 
   const presentDays = days.filter(([, items]) => items.some((r) => r.kind === "in")).length;
 
+  // Daily percentage: full day (in + out) = 100%, only checked in = 50%.
+  function dayPercent(items: Record[]): number {
+    const hasIn = items.some((r) => r.kind === "in");
+    const hasOut = items.some((r) => r.kind === "out");
+    if (hasIn && hasOut) return 100;
+    if (hasIn) return 50;
+    return 0;
+  }
+  const overallPct = days.length
+    ? Math.round(days.reduce((sum, [, items]) => sum + dayPercent(items), 0) / days.length)
+    : 0;
+
   return (
     <main className="flex-1 px-5 pt-8">
       <h1 className="text-2xl font-semibold tracking-tight">My Attendance</h1>
       {!isLoading && records.length > 0 && (
         <p className="mt-1 text-sm text-muted-foreground">
-          {presentDays} day{presentDays === 1 ? "" : "s"} marked present
+          {presentDays} day{presentDays === 1 ? "" : "s"} marked present · {overallPct}% attendance
         </p>
       )}
 
@@ -90,6 +102,7 @@ function HistoryPage() {
               <th className="px-4 py-3 font-medium">Out</th>
               <th className="px-4 py-3 font-medium">Subject</th>
               <th className="px-4 py-3 font-medium">Period</th>
+              <th className="px-4 py-3 text-right font-medium">Att %</th>
               <th className="px-4 py-3 text-right font-medium">Status</th>
             </tr>
           </thead>
@@ -119,6 +132,14 @@ function HistoryPage() {
                 );
               }
 
+              const pct = dayPercent(items);
+              const pctColor =
+                pct === 100
+                  ? "text-success"
+                  : pct > 0
+                    ? "text-accent"
+                    : "text-destructive";
+
               return (
                 <tr key={key} className="border-b border-border/60 last:border-0">
                   <td className="px-4 py-3 font-medium">
@@ -139,6 +160,7 @@ function HistoryPage() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {[...new Set(items.map((r) => r.period).filter(Boolean))].join(", ") || "—"}
                   </td>
+                  <td className={`px-4 py-3 text-right font-medium ${pctColor}`}>{pct}%</td>
                   <td className="px-4 py-3 text-right">{status}</td>
                 </tr>
               );
