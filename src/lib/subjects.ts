@@ -4,7 +4,7 @@ export const SUBJECTS_10TH = [
   "Maths",
   "Science",
   "Computer",
-  "Python",
+  "Python Programming",
   "FastAPI",
 ] as const;
 
