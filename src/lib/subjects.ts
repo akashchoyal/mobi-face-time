@@ -1,4 +1,12 @@
-export const SUBJECTS_10TH = ["Hindi", "English", "Maths", "Science", "Computer"] as const;
+export const SUBJECTS_10TH = [
+  "Hindi",
+  "English",
+  "Maths",
+  "Science",
+  "Computer",
+  "Python",
+  "FastAPI",
+] as const;
 
 export const PERIODS = [
   { label: "Period 1", time: "8:00 – 8:45" },
