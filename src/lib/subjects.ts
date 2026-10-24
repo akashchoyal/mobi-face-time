@@ -4,8 +4,6 @@ export const SUBJECTS_10TH = [
   "Maths",
   "Science",
   "Computer",
-  "Python Programming",
-  "FastAPI",
 ] as const;
 
 export const PERIODS = [
