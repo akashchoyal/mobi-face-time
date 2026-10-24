@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { isPyBackendConfigured, compareFacesViaBackend, type MatchResult } from "./py-backend.server";
 
 const DataUrl = z
   .string()
@@ -88,9 +89,12 @@ export const enrollFace = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-type MatchResult = { same_person: boolean; confidence: number; reason: string };
-
 async function compareFaces(reference: string, selfie: string): Promise<MatchResult> {
+  // When the external FastAPI backend is configured (PY_BACKEND_URL +
+  // PY_BACKEND_API_KEY) it handles face matching; otherwise the built-in
+  // Lovable AI gateway check below is used.
+  if (isPyBackendConfigured()) return compareFacesViaBackend(reference, selfie);
+
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("Face matching is not configured");
 
