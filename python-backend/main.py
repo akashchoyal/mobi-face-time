@@ -10,8 +10,6 @@ import os
 import re
 from functools import lru_cache
 from io import BytesIO
-from typing import Literal
-
 import numpy as np
 from fastapi import FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -160,7 +158,7 @@ def face_match(
         ) from error
 
     same_person = bool(result.get("verified", False))
-    confidence = max(0.0, min(1.0, 1.0 - distance / threshold))
+    confidence = max(0.0, min(1.0, 1.0 - distance))
     return FaceMatchResponse(
         same_person=same_person,
         confidence=confidence,
