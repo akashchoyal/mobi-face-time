@@ -43,7 +43,8 @@ The response is `{ "same_person": boolean, "confidence": 0..1, "reason": string 
 Each image is limited to 8 MiB, and matching requires a clear face in each
 image. Invalid images receive HTTP 422; a missing server key returns 503; an
 invalid request key returns 401. Image contents and keys are not logged or
-included in error responses.
+included in error responses. This verifies face similarity only; it does not
+prove that the selfie is a live person or prevent presentation attacks.
 
 The FaceMark app continues using its built-in face check until both
 `PY_BACKEND_URL` and `PY_BACKEND_API_KEY` have been added to the app's secure

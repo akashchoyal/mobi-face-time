@@ -47,7 +47,7 @@ class FaceMatchApiTests(unittest.TestCase):
 
     def test_rejects_invalid_image_before_running_the_model(self):
         payload = self.payload()
-        payload["selfie_image"] = "data:image/png;base64,not-an-image"
+        payload["selfie_image"] = "data:image/png;base64," + "not-an-image" * 12
         with patch.object(main, "_compare_faces") as compare:
             response = self.client.post(
                 "/v1/face-match",
