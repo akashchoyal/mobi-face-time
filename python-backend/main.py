@@ -158,7 +158,10 @@ def face_match(
         ) from error
 
     same_person = bool(result.get("verified", False))
-    confidence = max(0.0, min(1.0, 1.0 - distance))
+    similarity = max(0.0, min(1.0, 1.0 - distance / threshold))
+    confidence = similarity * (0.39 if same_person else 0.59) + (
+        0.6 if same_person else 0.0
+    )
     return FaceMatchResponse(
         same_person=same_person,
         confidence=confidence,
