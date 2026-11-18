@@ -106,6 +106,30 @@ export function GroupAttendanceScanner() {
       setBusy(false);
     }
   }
+  async function captureAndSave(image: string) {
+    if (!chosen || (chosen.className !== "10th" && chosen.className !== "11th")) return;
+    setBusy(true);
+    setPhoto(image);
+    setCamera(false);
+    try {
+      const r = await scan({ data: { ...chosen, className: chosen.className, image, subject, period } });
+      setResult(r);
+      setSelected(r.matches.map((m) => m.id));
+      if (!r.matches.length) {
+        toast.error("कोई student पहचाना नहीं गया; attendance नहीं लगाई गई।");
+        return;
+      }
+      await runLiveScanCycle(async () => r, () => true, (matched) => matched.matches.map((m) => m.id), async (matched, ids) => {
+        const outcome = await confirm({ data: { scanId: matched.scanId, studentIds: ids } });
+        setSaved(outcome.saved);
+        toast.success(`${outcome.saved} students की attendance साथ में save हुई।`);
+        await queryClient.invalidateQueries({ queryKey: ["teacher-attendance"] });
+        await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Attendance save नहीं हुई।");
+    } finally { setBusy(false); }
+  }
   async function save() {
     if (!result) return;
     setBusy(true);
@@ -224,6 +248,8 @@ export function GroupAttendanceScanner() {
           )}
           {camera && (
             <GroupCamera
+              busy={busy}
+              onAttendanceCapture={(image) => void captureAndSave(image)}
               onLiveFrame={recognizeLive}
               onLiveChange={changeLive}
               liveEnabled={Boolean(data?.configured && enrolled)}
@@ -323,6 +349,7 @@ export function GroupAttendanceScanner() {
               <p className="text-sm text-success">
                 {saved} attendance saved · pehle se present students dobara save nahi hue.
               </p>
+              {result && <ul className="mt-2 max-h-48 overflow-y-auto">{result.matches.map((m) => <li key={m.id} className="break-words py-1 text-sm">{m.name}</li>)}</ul>}
               <Button variant="outline" className="mt-3" onClick={reset}>
                 <RefreshCw /> Agli class
               </Button>

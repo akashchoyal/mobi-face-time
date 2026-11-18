@@ -10,3 +10,4 @@
 - [x] Add teacher live-camera scan controls with serial recognition and automatic saving of recognized students; 60-student cycle tested.
 - [ ] Verify live-camera recognition and attendance readback with real faces — blocked by missing Python server URL and key.
 - [x] Keep recognition simultaneous within each class camera frame, as clarified by the user's example screenshot.
+- [x] Add a teacher one-photo action that recognizes seated students and saves their attendance together, including groups of seven.

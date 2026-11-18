@@ -8,12 +8,16 @@ export function GroupCamera({
   onLiveFrame,
   liveEnabled = false,
   onLiveChange,
+  onAttendanceCapture,
+  busy = false,
 }: {
   onCapture: (image: string) => void;
   onClose: () => void;
   onLiveFrame?: (image: string) => Promise<void>;
   liveEnabled?: boolean;
   onLiveChange?: (active: boolean) => void;
+  onAttendanceCapture?: (image: string) => void;
+  busy?: boolean;
 }) {
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -111,7 +115,7 @@ export function GroupCamera({
         </p>
       )}
       <div className="flex gap-2">
-        <Button className="flex-1" disabled={!ready || live || processing.current} onClick={() => { const image = captureImage(); if (image) onCapture(image); }}>
+        <Button className="flex-1" disabled={!ready || live || busy || processing.current} onClick={() => { const image = captureImage(); if (image) onCapture(image); }}>
           <Camera /> Class photo lein
         </Button>
         <Button
@@ -119,7 +123,7 @@ export function GroupCamera({
           size="icon"
           title={error ? "Dobara try karein" : "Camera badlein"}
           aria-label={error ? "Dobara try karein" : "Camera badlein"}
-          disabled={live}
+          disabled={live || busy}
           onClick={() =>
             error
               ? setRetry((r) => r + 1)
@@ -129,9 +133,16 @@ export function GroupCamera({
           <RefreshCw />
         </Button>
       </div>
+      {onAttendanceCapture && (
+        <Button className="h-auto min-h-10 w-full whitespace-normal py-2" disabled={!ready || live || busy || !liveEnabled}
+          onClick={() => { const image = captureImage(); if (image) onAttendanceCapture(image); }}>
+          {busy ? <Loader2 className="shrink-0 animate-spin" /> : <Camera className="shrink-0" />}
+          फोटो लें और सबकी attendance लगाएँ
+        </Button>
+      )}
       {onLiveFrame && (
         <Button className="w-full" variant={live ? "destructive" : "default"}
-          disabled={!ready || (!live && !liveEnabled)}
+          disabled={!ready || (!live && (!liveEnabled || busy))}
           onClick={() => { const active = !live; running.current = active; onLiveChange?.(active); setLive(active); }}>
           {live ? <Square /> : <Play />} {live ? "Live scan rokein" : "Live attendance shuru karein"}
         </Button>
