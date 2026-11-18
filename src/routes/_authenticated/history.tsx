@@ -93,7 +93,7 @@ function HistoryPage() {
         </p>
       )}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
