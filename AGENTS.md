@@ -17,3 +17,4 @@
 - Group scan results are server-created, teacher-owned and expire after 30 minutes; the locked `confirm_group_attendance` RPC validates recognized IDs and deduplicates India-local daily check-ins, because client selections cannot authorize arbitrary attendance writes.
 
 - Student navigation opens attendance history; the legacy today page redirects by role and student profiles omit camera controls, keeping student scanning out of the interface without changing attendance APIs.
+- Teacher live mode runs serial camera-frame recognition and explicitly opted-in automatic confirmation through the existing locked RPC; stopping prevents pending recognition from initiating a save, and unrecognized students stay unmarked.

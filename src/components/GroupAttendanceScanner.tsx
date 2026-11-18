@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Camera, Loader2, ScanFace, Check, RefreshCw } from "lucide-react";
@@ -11,6 +11,7 @@ import {
   confirmGroupAttendance,
 } from "@/lib/group-attendance.functions";
 import { SUBJECTS_10TH, PERIODS } from "@/lib/subjects";
+import { runLiveScanCycle } from "@/lib/live-scan";
 
 export function GroupAttendanceScanner() {
   const setup = useServerFn(getGroupScanSetup);
@@ -30,6 +31,15 @@ export function GroupAttendanceScanner() {
   const [result, setResult] = useState<Awaited<ReturnType<typeof scan>> | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [saved, setSaved] = useState<number | null>(null);
+  const liveActive = useRef(false);
+  const [live, setLive] = useState(false);
+  const [liveSaved, setLiveSaved] = useState(0);
+  const [liveNames, setLiveNames] = useState<string[]>([]);
+  const changeLive = useCallback((active: boolean) => {
+    liveActive.current = active;
+    setLive(active);
+  }, []);
+  useEffect(() => () => { liveActive.current = false; }, []);
   const classes = Array.from(
     new Map(
       (data?.students ?? [])
@@ -50,11 +60,36 @@ export function GroupAttendanceScanner() {
   );
   const enrolled = students.filter((s) => s.enrolled).length;
   function reset() {
+    changeLive(false);
+    setLiveSaved(0);
+    setLiveNames([]);
     setPhoto("");
     setResult(null);
     setSelected([]);
     setSaved(null);
     setCamera(false);
+  }
+  async function recognizeLive(image: string) {
+    if (!chosen || (chosen.className !== "10th" && chosen.className !== "11th")) return;
+    setBusy(true);
+    try {
+      await runLiveScanCycle(
+        () => scan({ data: { ...chosen, className: chosen.className as "10th" | "11th", image, subject, period } }),
+        () => liveActive.current,
+        (r) => r.matches.map((m) => m.id),
+        async (r, ids) => {
+          const outcome = await confirm({ data: { scanId: r.scanId, studentIds: ids } });
+          setLiveSaved((count) => count + outcome.saved);
+          setLiveNames(r.matches.map((m) => m.name));
+          await queryClient.invalidateQueries({ queryKey: ["teacher-attendance"] });
+          await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+        },
+      );
+    } catch (e) {
+      changeLive(false);
+      toast.error(e instanceof Error ? e.message : "Live scan nahi hua.");
+      throw e;
+    } finally { setBusy(false); }
   }
   async function recognize() {
     if (!chosen || (chosen.className !== "10th" && chosen.className !== "11th")) return;
@@ -106,7 +141,7 @@ export function GroupAttendanceScanner() {
           </label>
           <select
             id="scan-class"
-            disabled={busy || Boolean(result)}
+            disabled={busy || live || Boolean(result)}
             value={classKey}
             onChange={(e) => {
               reset();
@@ -131,7 +166,7 @@ export function GroupAttendanceScanner() {
                 <select
                   id="scan-subject"
                   value={subject}
-                  disabled={busy || Boolean(result)}
+                  disabled={busy || live || Boolean(result)}
                   onChange={(e) => setSubject(e.target.value)}
                   className="mt-1 h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
                 >
@@ -149,7 +184,7 @@ export function GroupAttendanceScanner() {
               <select
                 id="scan-period"
                 value={period}
-                disabled={busy || Boolean(result)}
+                disabled={busy || live || Boolean(result)}
                 onChange={(e) => setPeriod(e.target.value)}
                 className="mt-1 h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
               >
@@ -189,12 +224,21 @@ export function GroupAttendanceScanner() {
           )}
           {camera && (
             <GroupCamera
-              onClose={() => setCamera(false)}
+              onLiveFrame={recognizeLive}
+              onLiveChange={changeLive}
+              liveEnabled={Boolean(data?.configured && enrolled)}
+              onClose={() => { changeLive(false); setCamera(false); }}
               onCapture={(p) => {
                 setPhoto(p);
                 setCamera(false);
               }}
             />
+          )}
+          {(live || liveSaved > 0) && (
+            <div role="status" className="mt-3 text-sm">
+              <p className="text-success">{liveSaved} nayi attendance saved</p>
+              {liveNames.length > 0 && <ul className="mt-2 max-h-48 overflow-y-auto">{liveNames.map((name, index) => <li key={index} className="break-words py-1">{name}</li>)}</ul>}
+            </div>
           )}
           {photo && (
             <img
