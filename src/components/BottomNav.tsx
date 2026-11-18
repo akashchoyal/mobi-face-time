@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ScanFace, History, User, Users } from "lucide-react";
+import { History, User, Users } from "lucide-react";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export function BottomNav() {
@@ -10,7 +10,6 @@ export function BottomNav() {
         { to: "/profile", label: "Profile", icon: User },
       ] as const)
     : ([
-        { to: "/today", label: "Today", icon: ScanFace },
         { to: "/history", label: "History", icon: History },
         { to: "/profile", label: "Profile", icon: User },
       ] as const);

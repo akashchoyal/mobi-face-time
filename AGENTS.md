@@ -15,3 +15,5 @@
 - Python Programming and FastAPI are backend technologies, never school subjects in `src/lib/subjects.ts`.
 - Teacher group-photo recognition uses the optional FastAPI `/v1/group-face-match` embedding matcher for up to 70 faces; never use a language model for bulk identity matching, because uncertain identities must remain unmarked.
 - Group scan results are server-created, teacher-owned and expire after 30 minutes; the locked `confirm_group_attendance` RPC validates recognized IDs and deduplicates India-local daily check-ins, because client selections cannot authorize arbitrary attendance writes.
+
+- Student navigation opens attendance history; the legacy today page redirects by role and student profiles omit camera controls, keeping student scanning out of the interface without changing attendance APIs.

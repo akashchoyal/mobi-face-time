@@ -24,7 +24,7 @@ export function AuthCard({ role, mode }: { role: Role; mode: "signin" | "signup"
   const options = klass === "10th" ? ["A", "B"] : ["Maths", "Bio", "Arts", "Agriculture"];
   const roleLabel = role === "teacher" ? "Teacher" : "Student";
   const RoleIcon = role === "teacher" ? BookOpen : GraduationCap;
-  const home = role === "teacher" ? "/students" : "/today";
+  const home = role === "teacher" ? "/students" : "/history";
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();

@@ -3,12 +3,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { LogOut, ScanFace } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 import { getDashboard, enrollFace } from "@/lib/attendance.functions";
 import { FaceCamera } from "@/components/FaceCamera";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsTeacher } from "@/hooks/use-is-teacher";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -16,10 +17,10 @@ export const Route = createFileRoute("/_authenticated/profile")({
       { title: "Your profile — FaceMark" },
       {
         name: "description",
-        content: "Save or update the face photo used to verify your attendance, and sign out.",
+        content: "View your FaceMark account details and sign out.",
       },
       { property: "og:title", content: "Your profile — FaceMark" },
-      { property: "og:description", content: "Manage your saved face and account." },
+      { property: "og:description", content: "Your FaceMark account details." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
+  const { data: isTeacher } = useIsTeacher();
   const fetchDashboard = useServerFn(getDashboard);
   const enroll = useServerFn(enrollFace);
   const queryClient = useQueryClient();
@@ -72,7 +74,7 @@ function ProfilePage() {
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
-              <ScanFace className="h-7 w-7 text-muted-foreground" />
+              <User className="h-7 w-7 text-muted-foreground" />
             </div>
           )}
           <div className="min-w-0">
@@ -81,6 +83,7 @@ function ProfilePage() {
           </div>
         </div>
 
+        {isTeacher === true && (<>
         <p className="mt-4 text-sm text-muted-foreground">
           {data?.profile?.enrolled
             ? "Your face is saved. Every check in is compared against this photo."
@@ -107,6 +110,7 @@ function ProfilePage() {
             {data?.profile?.enrolled ? "Retake face photo" : "Save my face"}
           </Button>
         )}
+        </>)}
       </div>
 
       <Button

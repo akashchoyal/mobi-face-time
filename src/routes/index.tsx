@@ -13,12 +13,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Mark attendance with a face scan. Sign up, save your face once, then check in and out from your phone in seconds.",
+          "Teacher-led face recognition attendance and daily student attendance records.",
       },
       { property: "og:title", content: "FaceMark — Face Recognition Attendance App" },
       {
         property: "og:description",
-        content: "Face-verified check in and check out, built for phones.",
+        content: "Teacher-led face attendance and student records, built for phones.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
