@@ -49,3 +49,25 @@ prove that the selfie is a live person or prevent presentation attacks.
 The FaceMark app continues using its built-in face check until both
 `PY_BACKEND_URL` and `PY_BACKEND_API_KEY` have been added to the app's secure
 settings. Do not configure a live connection before the service is deployed.
+
+## Teacher group-photo attendance
+
+`POST /v1/group-face-match` uses the same Bearer key and accepts
+`{group_image, students: [{student_id, reference_image}]}` with up to 70 enrolled
+students and 70 detected faces. It returns `{detected_faces, matches:
+[{student_id, confidence}], unavailable_student_ids}`. RetinaFace detects faces
+and FaceNet512 produces embeddings; one-to-one cosine-distance assignment rejects
+ambiguous identities. This is not a guarantee that 70 small/distant faces will
+be recognized: clear, high-resolution, front-facing photos are essential.
+Warm up both model weights before production use; allow a request body large
+enough for the reference photos and configure the host timeout accordingly.
+
+The teacher captures a full-width rear-camera photo, reviews recognized names,
+and confirms attendance. Only recognized students can be confirmed, unmatched
+students are not marked absent, and repeat check-ins for the same day/subject/
+period are skipped. Scan results expire after 30 minutes. The group photo is
+not stored in the database. Group scanning stays disabled until both Python
+service secrets exist; camera preview can still be opened before connection.
+
+Run tests without downloading model weights:
+`python -m unittest discover -s tests -v`.

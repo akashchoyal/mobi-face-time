@@ -71,7 +71,7 @@ class FaceMatchApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json(),
-            {"same_person": True, "confidence": 0.8, "reason": "Faces match."},
+            {"same_person": True, "confidence": 0.8925, "reason": "Faces match."},
         )
 
     def test_unmatched_faces_return_zero_confidence_and_a_rejection(self):

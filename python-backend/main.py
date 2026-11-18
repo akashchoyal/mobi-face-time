@@ -14,6 +14,7 @@ import numpy as np
 from fastapi import FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 from PIL import Image, UnidentifiedImageError
+from group_match import assign_faces
 
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_DIMENSION = 4096
@@ -42,6 +43,63 @@ class FaceMatchResponse(BaseModel):
     same_person: bool
     confidence: float = Field(ge=0, le=1)
     reason: str
+
+
+class StudentReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    student_id: str = Field(min_length=36, max_length=36)
+    reference_image: str = Field(min_length=100, max_length=MAX_DATA_URL_LENGTH)
+
+
+class GroupMatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    group_image: str = Field(min_length=100, max_length=MAX_DATA_URL_LENGTH)
+    students: list[StudentReference] = Field(min_length=1, max_length=70)
+
+
+def _authorize(authorization):
+    expected_key = os.environ.get("PY_BACKEND_API_KEY", "")
+    if not expected_key:
+        raise HTTPException(status_code=503, detail="Face matching is not configured.")
+    scheme, _, key = (authorization or "").partition(" ")
+    if scheme.lower() != "bearer" or not key or not hmac.compare_digest(key, expected_key):
+        raise HTTPException(status_code=401, detail="Invalid authorization.")
+
+
+def _represent(image):
+    return _get_face_model().represent(img_path=image, model_name="Facenet512",
+        detector_backend="retinaface", enforce_detection=True, align=True)
+
+
+@app.post("/v1/group-face-match")
+def group_face_match(payload: GroupMatchRequest, authorization: str | None = Header(default=None)):
+    _authorize(authorization)
+    if len({s.student_id for s in payload.students}) != len(payload.students):
+        raise HTTPException(status_code=422, detail="Duplicate students are not allowed.")
+    image = _decode_image(payload.group_image)
+    references = [_decode_image(s.reference_image) for s in payload.students]
+    try:
+        faces = _represent(image)
+        if len(faces) > 70:
+            raise ValueError("Too many faces.")
+        embeddings, students, unavailable = [], [], []
+        for student, reference in zip(payload.students, references):
+            try:
+                represented = _represent(reference)
+                if len(represented) != 1:
+                    raise ValueError("Reference needs one face.")
+                embeddings.append(represented[0]["embedding"])
+                students.append(student.student_id)
+            except ValueError:
+                unavailable.append(student.student_id)
+        matches = assign_faces(embeddings, [f["embedding"] for f in faces])
+        return {"detected_faces": len(faces), "matches": [
+            {"student_id": students[m["reference_index"]], "confidence": m["confidence"]}
+            for m in matches], "unavailable_student_ids": unavailable}
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail="Use a clear class photo with at most 70 faces.") from error
+    except Exception as error:
+        raise HTTPException(status_code=503, detail="Group face matching is temporarily unavailable.") from error
 
 
 def _decode_image(data_url: str) -> np.ndarray:

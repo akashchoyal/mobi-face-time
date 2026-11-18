@@ -2,3 +2,4 @@ fastapi>=0.115,<1
 uvicorn[standard]>=0.34,<1
 deepface>=0.0.95,<0.0.99
 Pillow>=10,<12
+scipy>=1.14,<2

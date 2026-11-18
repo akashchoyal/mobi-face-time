@@ -7,12 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { SUBJECTS_10TH, PERIODS } from "@/lib/subjects";
 import { useIsTeacher } from "@/hooks/use-is-teacher";
 import { Input } from "@/components/ui/input";
+import { GroupAttendanceScanner } from "@/components/GroupAttendanceScanner";
 
 export const Route = createFileRoute("/_authenticated/students")({
   head: () => ({
     meta: [
       { title: "Student attendance — FaceMark" },
-      { name: "description", content: "Teachers can see every student's check ins and check outs." },
+      {
+        name: "description",
+        content: "Teachers can see every student's check ins and check outs.",
+      },
       { property: "og:title", content: "Student attendance — FaceMark" },
       { property: "og:description", content: "All student attendance in one place." },
       { property: "og:type", content: "website" },
@@ -42,7 +46,11 @@ function StudentsPage() {
   const [day, setDay] = useState(toDateInput(new Date()));
   const [subjectFilter, setSubjectFilter] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
-  const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>(CLASS_OPTIONS[0]!);
+  const [classFilter, setClassFilter] = useState<(typeof CLASS_OPTIONS)[number]>({
+    label: "All",
+    className: "",
+    section: "",
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["teacher-attendance", day],
@@ -51,7 +59,10 @@ function StudentsPage() {
       const start = new Date(`${day}T00:00:00`);
       const end = new Date(start.getTime() + 86400000);
       const [{ data: profiles }, { data: records }, { data: teachers }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, email, school_name, class_name, section").order("full_name"),
+        supabase
+          .from("profiles")
+          .select("id, full_name, email, school_name, class_name, section")
+          .order("full_name"),
         supabase
           .from("attendance")
           .select("id, user_id, kind, confidence, created_at, subject, period")
@@ -69,7 +80,9 @@ function StudentsPage() {
 
   if (roleLoading) return <Spinner />;
   if (!isTeacher)
-    return <p className="p-6 text-center text-muted-foreground">Only teachers can see this page.</p>;
+    return (
+      <p className="p-6 text-center text-muted-foreground">Only teachers can see this page.</p>
+    );
 
   const showSubjects = classFilter.className === "10th";
   const filtered = data
@@ -91,8 +104,14 @@ function StudentsPage() {
   return (
     <main className="px-5 pt-8">
       <h1 className="text-2xl font-semibold tracking-tight">Student attendance</h1>
+      <GroupAttendanceScanner />
       <div className="mt-4 flex items-center gap-3">
-        <Input type="date" value={day} onChange={(e) => setDay(e.target.value)} className="w-auto" />
+        <Input
+          type="date"
+          value={day}
+          onChange={(e) => setDay(e.target.value)}
+          className="w-auto"
+        />
         {filtered && (
           <span className="text-sm text-muted-foreground">
             {present} / {filtered.length} present
@@ -164,11 +183,16 @@ function StudentsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-medium">{s.full_name || "Unnamed"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{s.class_name ? `${s.class_name} – ${s.section} · ` : ""}{s.school_name || s.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {s.class_name ? `${s.class_name} – ${s.section} · ` : ""}
+                      {s.school_name || s.email}
+                    </p>
                   </div>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      firstIn ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                      firstIn
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground"
                     }`}
                   >
                     {firstIn ? "Present" : "Absent"}

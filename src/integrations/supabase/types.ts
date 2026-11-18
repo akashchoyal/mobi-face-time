@@ -47,6 +47,51 @@ export type Database = {
         }
         Relationships: []
       }
+      group_attendance_scans: {
+        Row: {
+          class_name: string
+          confirmed_at: string | null
+          created_at: string
+          detected_faces: number
+          expires_at: string
+          id: string
+          matches: Json
+          period: string
+          school_name: string
+          section: string
+          subject: string
+          teacher_id: string
+        }
+        Insert: {
+          class_name: string
+          confirmed_at?: string | null
+          created_at?: string
+          detected_faces?: number
+          expires_at?: string
+          id?: string
+          matches?: Json
+          period: string
+          school_name: string
+          section: string
+          subject: string
+          teacher_id: string
+        }
+        Update: {
+          class_name?: string
+          confirmed_at?: string | null
+          created_at?: string
+          detected_faces?: number
+          expires_at?: string
+          id?: string
+          matches?: Json
+          period?: string
+          school_name?: string
+          section?: string
+          subject?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           class_name: string
@@ -105,6 +150,10 @@ export type Database = {
     Functions: {
       class_seat_count: {
         Args: { _class: string; _section: string }
+        Returns: number
+      }
+      confirm_group_attendance: {
+        Args: { _scan_id: string; _student_ids: string[] }
         Returns: number
       }
       has_role: {
